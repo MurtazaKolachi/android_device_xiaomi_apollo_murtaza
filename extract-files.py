@@ -16,6 +16,19 @@ from extract_utils.fixups_lib import (
     lib_fixups,
     lib_fixups_user_type,
 )
+import os
+
+
+class CustomFixup(blob_fixup):
+    def replace_if_missing(self, search: bytes, old: str, new: str):
+        def _fixup(path: str):
+            with open(path, 'rb') as f:
+                content = f.read()
+            if search not in content:
+                self.replace_needed(old, new)._fixup(path)
+        self._fixup = _fixup
+        return self
+
 
 blob_fixups: blob_fixups_user_type = {
     'vendor/etc/camera/camxoverridesettings.txt': blob_fixup()
@@ -73,6 +86,16 @@ blob_fixups: blob_fixups_user_type = {
         .add_needed('libcrypto_shim.so'),
     'vendor/lib64/mediadrm/libwvdrmengine.so': blob_fixup()
         .add_needed('libcrypto_shim.so'),
+    (
+        'vendor/lib/libstagefright_soft_ac4dec.so',
+        'vendor/lib/libstagefright_soft_ddpdec.so',
+        'vendor/lib/libstagefrightdolby.so',
+        'vendor/lib64/libdlbdsservice.so',
+        'vendor/lib64/libstagefright_soft_ac4dec.so',
+        'vendor/lib64/libstagefright_soft_ddpdec.so',
+        'vendor/lib64/libstagefrightdolby.so',
+    ): CustomFixup()
+        .replace_if_missing(b'libstagefright_foundation-v33.so', 'libstagefright_foundation.so', 'libstagefright_foundation-v33.so'),
 }  # fmt: skip
 
 
@@ -113,3 +136,4 @@ module = ExtractUtilsModule(
 if __name__ == '__main__':
     utils = ExtractUtils.device(module)
     utils.run()
+    
