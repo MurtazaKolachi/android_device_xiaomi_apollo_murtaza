@@ -151,6 +151,7 @@ TARGET_SCREEN_WIDTH := 1080
 
 # Device-specific settings
 PRODUCT_PACKAGES += \
+    XiaomiDolby \
     XiaomiParts
 
 # Display
